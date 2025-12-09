@@ -25,9 +25,13 @@ const PdfUploader = ({ onPdfUploaded }) => {
     formData.append("pdf", file);
 
     try {
-      
+      // Use REACT_APP_API_URL when provided (production); otherwise use relative path (dev/proxy)
+      const apiBaseRaw = 'https://bolosign-88qv.onrender.com' || "";
+      const apiBase = apiBaseRaw.replace(/\/$/, "");
+      const uploadUrl = apiBase ? `${apiBase}/api/upload` : "/api/upload";
+
       // Let the browser set the Content-Type (including the boundary)
-      const response = await axios.post("/api/upload", formData);
+      const response = await axios.post(uploadUrl, formData);
 
       if (response.data.success) {
         

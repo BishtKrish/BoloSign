@@ -374,7 +374,7 @@ const PdfEditor = ({ document, onBack }) => {
         })),
       };
 
-      const apiBaseRaw = process.env.REACT_APP_API_URL || "";
+      const apiBaseRaw = 'https://bolosign-88qv.onrender.com' || "";
       const apiBase = apiBaseRaw.replace(/\/$/, "");
       const signUrl = apiBase ? `${apiBase}/api/sign` : "/api/sign";
 
@@ -448,7 +448,7 @@ const PdfEditor = ({ document, onBack }) => {
         >
           <Document
             file={(function() {
-              const apiBaseRaw = process.env.REACT_APP_API_URL || "";
+              const apiBaseRaw = 'https://bolosign-88qv.onrender.com' || "";
               const apiBase = apiBaseRaw.replace(/\/$/, "");
               if (!document?.url) return null;
               // If document.url is already absolute, use it. Otherwise prefix with apiBase when available.
