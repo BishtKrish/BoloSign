@@ -375,13 +375,13 @@ const PdfEditor = ({ document, onBack }) => {
       };
 
       const response = await axios.post(
-        "http://localhost:5008/api/sign",
+        "https://bolosign-88qv.onrender.com/api/sign",
         payload
       );
 
       if (response.data.success) {
         // Success! Open the signed PDF in a new tab
-        const signedPdfUrl = `http://localhost:5008${response.data.signedPdf.url}`;
+        const signedPdfUrl = `https://bolosign-88qv.onrender.com${response.data.signedPdf.url}`;
         console.log("✅ PDF signed successfully! Opening:", signedPdfUrl);
         window.open(signedPdfUrl, "_blank");
       }
@@ -444,7 +444,7 @@ const PdfEditor = ({ document, onBack }) => {
           onClick={() => setSelectedField(null)}
         >
           <Document
-            file={`http://localhost:5008${document.url}`}
+            file={`https://bolosign-88qv.onrender.com${document.url}`}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<div className="loading">Loading PDF...</div>}
           >
