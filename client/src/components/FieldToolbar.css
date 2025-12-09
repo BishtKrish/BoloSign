@@ -1,0 +1,71 @@
+.field-toolbar {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.toolbar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.toolbar-hint {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 1rem;
+}
+
+.field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.field-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.field-item:hover {
+  background: #edf2f7;
+  border-color: #667eea;
+  transform: translateX(4px);
+}
+
+.field-item:active {
+  cursor: grabbing;
+}
+
+.field-icon {
+  font-size: 1.25rem;
+}
+
+.field-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+@media (max-width: 768px) {
+  .field-toolbar {
+    width: 100%;
+  }
+
+  .field-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

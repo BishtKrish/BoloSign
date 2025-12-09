@@ -1,0 +1,284 @@
+.pdf-editor {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  gap: 1rem;
+}
+
+.editor-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-info {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.editor-workspace {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pdf-container {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: auto;
+  position: relative;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #718096;
+}
+
+.pdf-field {
+  border: 2px dashed #cbd5e0;
+  background: rgba(102, 126, 234, 0.05);
+  cursor: move;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  position: absolute;
+  z-index: 10;
+}
+
+.pdf-field.dragging {
+  opacity: 0.7;
+  cursor: grabbing;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  z-index: 1000;
+}
+
+.pdf-field:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.pdf-field.selected {
+  border: 2px solid #667eea;
+  background: rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  z-index: 20;
+}
+
+.field-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: text;
+}
+
+.field-input:focus {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.signature-placeholder,
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: #667eea;
+  cursor: move;
+  text-align: center;
+  position: relative;
+}
+
+.signature-placeholder span,
+.image-placeholder span {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.signature-placeholder span:hover,
+.image-placeholder span:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+.signature-placeholder img,
+.image-placeholder img {
+  pointer-events: none;
+  user-select: none;
+}
+
+.edit-field-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  background: rgba(102, 126, 234, 0.95);
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  opacity: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  pointer-events: auto;
+}
+
+.pdf-field:hover .edit-field-btn,
+.pdf-field.selected .edit-field-btn {
+  opacity: 1;
+}
+
+.edit-field-btn:hover {
+  background: #764ba2;
+  transform: scale(1.1);
+}
+
+.checkbox-input,
+.radio-input {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transform: scale(1.5);
+  pointer-events: auto;
+}
+
+.resize-handle {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: #667eea;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+
+.delete-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  background: #f56565;
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.delete-button:hover {
+  background: #c53030;
+}
+
+/* Ensure PDF layers don't interfere with fields */
+.react-pdf__Page__textContent {
+  z-index: 1 !important;
+}
+
+.react-pdf__Page__annotations {
+  z-index: 2 !important;
+}
+
+.react-pdf__Page__canvas {
+  z-index: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .editor-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .editor-workspace {
+    flex-direction: column;
+  }
+
+  .pdf-container {
+    padding: 1rem;
+  }
+}
