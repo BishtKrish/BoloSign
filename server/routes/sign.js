@@ -258,25 +258,31 @@ router.post("/", async (req, res) => {
     
     const pdfBytes = await pdfDoc.save();
     const signedFilename = `signed-${Date.now()}-${path.basename(pdfFilename)}`;
-    const signedPath = path.join(
-      __dirname,
-      "../../uploads/signed",
-      signedFilename
-    );
+    const signedPath = path.join(__dirname, "../../uploads/signed", signedFilename);
 
     const signedDir = path.dirname(signedPath);
     if (!fs.existsSync(signedDir)) {
       fs.mkdirSync(signedDir, { recursive: true });
     }
 
-    fs.writeFileSync(signedPath, pdfBytes);
+    // Write to disk for backward compatibility (may not be served on some hosts)
+    try {
+      fs.writeFileSync(signedPath, pdfBytes);
+    } catch (e) {
+      console.warn("Could not write signed PDF to disk:", e.message);
+    }
+
+    // Also return the signed PDF as base64 so clients can open it directly
+    const fileBase64 = Buffer.from(pdfBytes).toString("base64");
 
     res.json({
       success: true,
       signedPdf: {
         filename: signedFilename,
+        // keep url for deployments that can serve /uploads
         url: `/uploads/signed/${signedFilename}`,
         path: signedPath,
+        fileBase64,
       },
     });
   } catch (error) {

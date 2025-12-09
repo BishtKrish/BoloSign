@@ -381,9 +381,31 @@ const PdfEditor = ({ document, onBack }) => {
       const response = await axios.post(signUrl, payload);
 
       if (response.data.success) {
-        // Success! Open the signed PDF in a new tab
-        const signedPdfUrl = response.data.signedPdf?.url
-          ? (apiBase ? `${apiBase}${response.data.signedPdf.url}` : response.data.signedPdf.url)
+        // If server returned base64 of signed PDF, open it directly
+        const signed = response.data.signedPdf || {};
+        if (signed.fileBase64) {
+          try {
+            const byteChars = atob(signed.fileBase64);
+            const byteNumbers = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+              byteNumbers[i] = byteChars.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: "application/pdf" });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, "_blank");
+            // Optionally revoke after some time
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60 * 1000);
+            console.log("✅ PDF signed and opened from base64 payload");
+            return;
+          } catch (ex) {
+            console.warn("Failed to open base64 PDF:", ex);
+          }
+        }
+
+        // Fallback: open provided URL (may be served from uploads when available)
+        const signedPdfUrl = signed.url
+          ? (apiBase ? `${apiBase}${signed.url}` : signed.url)
           : null;
         console.log("✅ PDF signed successfully! Opening:", signedPdfUrl);
         if (signedPdfUrl) window.open(signedPdfUrl, "_blank");
