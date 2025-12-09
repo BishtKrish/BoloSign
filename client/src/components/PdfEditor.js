@@ -374,16 +374,19 @@ const PdfEditor = ({ document, onBack }) => {
         })),
       };
 
-      const response = await axios.post(
-        "https://bolosign-88qv.onrender.com/api/sign",
-        payload
-      );
+      const apiBaseRaw = process.env.REACT_APP_API_URL || "";
+      const apiBase = apiBaseRaw.replace(/\/$/, "");
+      const signUrl = apiBase ? `${apiBase}/api/sign` : "/api/sign";
+
+      const response = await axios.post(signUrl, payload);
 
       if (response.data.success) {
         // Success! Open the signed PDF in a new tab
-        const signedPdfUrl = `https://bolosign-88qv.onrender.com${response.data.signedPdf.url}`;
+        const signedPdfUrl = response.data.signedPdf?.url
+          ? (apiBase ? `${apiBase}${response.data.signedPdf.url}` : response.data.signedPdf.url)
+          : null;
         console.log("✅ PDF signed successfully! Opening:", signedPdfUrl);
-        window.open(signedPdfUrl, "_blank");
+        if (signedPdfUrl) window.open(signedPdfUrl, "_blank");
       }
     } catch (error) {
       console.error("❌ Error signing PDF:", error);
@@ -444,7 +447,14 @@ const PdfEditor = ({ document, onBack }) => {
           onClick={() => setSelectedField(null)}
         >
           <Document
-            file={`https://bolosign-88qv.onrender.com${document.url}`}
+            file={(function() {
+              const apiBaseRaw = process.env.REACT_APP_API_URL || "";
+              const apiBase = apiBaseRaw.replace(/\/$/, "");
+              if (!document?.url) return null;
+              // If document.url is already absolute, use it. Otherwise prefix with apiBase when available.
+              if (/^https?:\/\//i.test(document.url)) return document.url;
+              return apiBase ? `${apiBase}${document.url}` : document.url;
+            })()}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<div className="loading">Loading PDF...</div>}
           >

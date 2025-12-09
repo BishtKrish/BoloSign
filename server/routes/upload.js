@@ -9,21 +9,8 @@ const { Document } = require("../models/Document");
 const router = express.Router();
 
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "../../uploads/pdfs");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${Math.round(
-      Math.random() * 1e9
-    )}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  },
-});
+// Use memory storage so we can persist PDFs directly into MongoDB
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === "application/pdf") {
@@ -36,7 +23,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, 
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 
@@ -46,8 +33,8 @@ router.post("/", upload.single("pdf"), async (req, res) => {
       return res.status(400).json({ error: "No PDF file uploaded" });
     }
 
-    const pdfPath = req.file.path;
-    const pdfBytes = fs.readFileSync(pdfPath);
+    // req.file.buffer contains the uploaded file bytes
+    const pdfBytes = req.file.buffer;
     const pdfDoc = await PDFDocument.load(pdfBytes);
 
     const pageCount = pdfDoc.getPageCount();
@@ -63,10 +50,14 @@ router.post("/", upload.single("pdf"), async (req, res) => {
     
     let documentRecord = null;
     if (mongoose.connection.readyState === 1) {
+      const filename = req.file.originalname || `upload-${Date.now()}`;
       documentRecord = new Document({
-        filename: req.file.filename,
+        filename,
         originalName: req.file.originalname,
-        filePath: req.file.path,
+        // keep filePath for backward compatibility when present
+        filePath: null,
+        fileData: pdfBytes,
+        contentType: req.file.mimetype,
         pageCount,
         pageDimensions,
       });
@@ -76,12 +67,12 @@ router.post("/", upload.single("pdf"), async (req, res) => {
     res.json({
       success: true,
       document: {
-        id: documentRecord?._id || req.file.filename,
-        filename: req.file.filename,
-        originalName: req.file.originalname,
+        id: documentRecord?._id,
+        filename: documentRecord?.filename,
+        originalName: documentRecord?.originalName,
         pageCount,
         pageDimensions,
-        url: `/uploads/pdfs/${req.file.filename}`,
+        url: documentRecord ? `/api/upload/file/${documentRecord._id}` : null,
       },
     });
   } catch (error) {
@@ -89,6 +80,26 @@ router.post("/", upload.single("pdf"), async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to process PDF", details: error.message });
+  }
+});
+
+// Serve stored PDF by document id
+router.get("/file/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid document id" });
+    }
+    const doc = await Document.findById(id).exec();
+    if (!doc || !doc.fileData) {
+      return res.status(404).json({ error: "Document or file not found" });
+    }
+    res.setHeader("Content-Type", doc.contentType || "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${doc.originalName || doc.filename}"`);
+    return res.send(doc.fileData);
+  } catch (err) {
+    console.error("Error serving file:", err);
+    return res.status(500).json({ error: "Failed to retrieve file", details: err.message });
   }
 });
 

@@ -9,9 +9,16 @@ const documentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Optional file path (kept for compatibility). Prefer storing fileData below.
   filePath: {
     type: String,
-    required: true,
+  },
+  // Store file bytes directly in the database
+  fileData: {
+    type: Buffer,
+  },
+  contentType: {
+    type: String,
   },
   pageCount: Number,
   pageDimensions: [
