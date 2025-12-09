@@ -26,15 +26,8 @@ const PdfUploader = ({ onPdfUploaded }) => {
 
     try {
       
-      const response = await axios.post(
-        "/api/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // Let the browser set the Content-Type (including the boundary)
+      const response = await axios.post("/api/upload", formData);
 
       if (response.data.success) {
         
@@ -43,9 +36,10 @@ const PdfUploader = ({ onPdfUploaded }) => {
       }
     } catch (err) {
       
+      const status = err.response?.status;
       const serverMessage = err.response?.data?.error || err.response?.data?.details;
-      setError(serverMessage || err.message || "Failed to upload PDF");
-      console.error("❌ Upload error:", err);
+      setError(serverMessage || err.message || `Failed to upload PDF${status ? ` (status ${status})` : ""}`);
+      console.error("❌ Upload error:", err.response || err.message || err);
     } finally {
       setUploading(false);
     }
