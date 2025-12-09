@@ -16,7 +16,7 @@ const fs = require("fs");
 const path = require("path");
 const { PDFDocument, rgb } = require("pdf-lib");
 const mongoose = require("mongoose");
-const { Field } = require("../models/Document");
+const { Document, Field } = require("../models/Document");
 
 const router = express.Router();
 
@@ -107,15 +107,35 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const pdfPath = path.join(__dirname, "../../uploads/pdfs", pdfFilename);
+    // Try to load the PDF bytes from the DB (preferred) using documentId,
+    // otherwise fall back to reading from disk using pdfFilename.
+    let pdfBytes = null;
+    if (mongoose.connection.readyState === 1 && documentId) {
+      try {
+        const docRecord = await Document.findById(documentId).exec();
+        if (docRecord && docRecord.fileData && docRecord.fileData.length) {
+          pdfBytes = docRecord.fileData;
+        } else if (docRecord && docRecord.filePath && fs.existsSync(docRecord.filePath)) {
+          pdfBytes = fs.readFileSync(docRecord.filePath);
+        }
+      } catch (dbErr) {
+        console.warn("Error fetching document from DB:", dbErr.message);
+      }
+    }
 
-    if (!fs.existsSync(pdfPath)) {
+    // If still not found, try loading from uploads/pdfs by filename (legacy behavior)
+    if (!pdfBytes && pdfFilename) {
+      const pdfPath = path.join(__dirname, "../../uploads/pdfs", pdfFilename);
+      if (fs.existsSync(pdfPath)) {
+        pdfBytes = fs.readFileSync(pdfPath);
+      }
+    }
+
+    if (!pdfBytes) {
       return res.status(404).json({ error: "PDF file not found" });
     }
 
-    
-    const existingPdfBytes = fs.readFileSync(pdfPath);
-    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
 
     
     for (const field of fields) {
