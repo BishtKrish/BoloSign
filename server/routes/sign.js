@@ -276,7 +276,7 @@ router.post("/", async (req, res) => {
     }
 
     
-    const pdfBytes = await pdfDoc.save();
+     pdfBytes = await pdfDoc.save();
     const signedFilename = `signed-${Date.now()}-${path.basename(pdfFilename)}`;
     const signedPath = path.join(__dirname, "../../uploads/signed", signedFilename);
 
